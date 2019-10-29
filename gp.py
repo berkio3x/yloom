@@ -15,8 +15,6 @@ ch.setLevel(logging.DEBUG)
 logger.addHandler(ch)
 
 import os
-
-
 def get_all_files():
     return glob.glob("/Users/dev")
 
@@ -51,7 +49,7 @@ class E:
     
     def get_rowcount(self):
         #return len(self.row)
-        return len(self.rows)
+        return len(self.rows) - 1
 
     
     #def set_rowcount(self, c):
@@ -68,8 +66,6 @@ def editorOpen(filename):
         for line in f:
             editorAppendRow(line)
         
-
-
 def restoreCanonMode(fd, old):
     termios.tcsetattr(fd, termios.TCSADRAIN, old)
 
@@ -102,7 +98,8 @@ def editorMoveCursor(key):
     if key == 'w':
         e.cy -= 1
     if key == 's':
-        e.cy += 1
+        if e.cy <= e.get_rowcount():
+            e.cy += 1
     
 
 def launchFileManager():
@@ -169,11 +166,24 @@ def editorScroll():
     """
         Calculate the row offset based on cursor position
     """
-    if e.cy < e.rowoffset:
-        e.rowoffset = e.cy
-    if e.cy >= e.rowoffset + e.h:
-        e.rowoffset = e.cy - e.h
+    #import pdb;pdb.set_trace()
+    if e.cy < e.h:
+        e.rowoffset = 0
+    else:
+        if e.cy >  e.h:
+            e.rowoffset = e.cy - e.h
 
+
+
+def addCursorPosition():
+    #import pdb;pdb.set_trace()
+    if e.cy <= e.get_rowcount():
+
+        #print("\x1b[H")
+        e.ab.append("\r\033[%d;%dH"%(e.cy,e.cx))
+    else:
+        e.ab.append("\r\033[%d;%dH"%(e.get_rowcount(),e.cx))
+        
 
 def refreshScreen():    
     #system('clear')
@@ -185,11 +195,10 @@ def refreshScreen():
     #sys.stdout.write("\x1b[H")
     #import pdb;pdb.set_trace()
     drawRows()
-    #print("\x1b[H")
-    e.ab.append("\r\033[%d;%dH"%(e.cy,e.cx))
+    addCursorPosition()
     #import pdb;pdb.set_trace();
     #e.ab.append('\r\x1b[H')
-    logger.debug(e.ab)
+    #logger.debug(e.ab)
 
     e.writeBufferToScreen()
     e.clearBuffer()
@@ -200,15 +209,16 @@ def drawRows():
         #import pdb;pdb.set_trace()
         linerow = y + e.rowoffset
         if y < e.get_rowcount():
-            logger.debug(f"rows: {len(e.rows)} , 'linerow': {linerow}")
+            #logger.debug(f"rows: {len(e.rows)} , 'linerow': {linerow}")
             e.ab.append(e.rows[linerow])
         elif  y == int(e.h/2):
             ss = "~ 🐻 Welcome to editor 🐻 ~"
-            msg = (int(e.w/2)-int(len(ss)/2))*" "+ss+"\r\n"
-            e.ab.append('~'+msg)
+            msg = (int(e.w/2)-int(len(ss)/2))*" "+ss
+            e.ab.append('\u001b[31;1m~\u001b[0m'+msg)
         else:
-            e.ab.append('~\r\n')
+            e.ab.append('\u001b[31;1m~\u001b[0m\r\n')
         e.ab.append('\x1b[K')
+    #import pdb; pdb.set_trace()
 
 if __name__ == '__main__':
     
