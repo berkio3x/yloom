@@ -153,14 +153,13 @@ def editorProcessKey():
 
     if c == 'q':
         raise Exception
-    if c in ['w','s','a','d']:
+    elif c in ['w','s','a','d']:
         editorMoveCursor(c)
-    if c == 'f':
-        launchFileManager()
 
-    if c == 'x':
+    elif c == 'x':
         startDebugMode()
-
+    else:
+        insertCharAt(e.cy, c, e.cx)
 
 def editorScroll():
     """
@@ -203,6 +202,9 @@ def refreshScreen():
     e.writeBufferToScreen()
     e.clearBuffer()
 
+def insertCharAt(row_idx, char, char_idx):
+    e.rows[row_idx] = e.rows[row_idx][:char_idx+1]+char+e.rows[row_idx][char_idx+1:]
+    editorMoveCursor('d')
 
 def drawRows():
     for y in range(e.h):
