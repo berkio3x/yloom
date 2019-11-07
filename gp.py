@@ -1,6 +1,5 @@
 #!/usr/local/bin/python3
 
-
 import logging
 import sys, termios
 from os import system
@@ -96,7 +95,8 @@ def editorMoveCursor(key):
     if key == 'd':
         e.cx += 1
     if key == 'w':
-        e.cy -= 1
+        if e.cy > 0:
+            e.cy -= 1
     if key == 's':
         if e.cy <= e.get_rowcount():
             e.cy += 1
@@ -175,7 +175,9 @@ def editorScroll():
 
 
 def addCursorPosition():
-    #import pdb;pdb.set_trace()
+    """
+        If 
+    """
     if e.cy <= e.get_rowcount():
 
         #print("\x1b[H")
@@ -213,14 +215,21 @@ def drawRows():
         if y < e.get_rowcount():
             #logger.debug(f"rows: {len(e.rows)} , 'linerow': {linerow}")
             e.ab.append(e.rows[linerow])
-        elif  y == int(e.h/2):
-            ss = "~ 🐻 Welcome to editor 🐻 ~"
-            msg = (int(e.w/2)-int(len(ss)/2))*" "+ss
-            e.ab.append('\u001b[31;1m~\u001b[0m'+msg)
+        #elif  y == int(e.h/2):
+        #    ss = "~ 🐻 Welcome to editor 🐻 ~"
+        #    msg = (int(e.w/2)-int(len(ss)/2))*" "+ss
+        #    e.ab.append('\u001b[31;1m~\u001b[0m'+msg)
+        elif y == e.h-1:
+            msg = f"({e.cx},{e.cy})"
+            status = " "*(int(e.w-1)-len(msg))+msg+" "
+            e.ab.append("\u001b[1m\u001b[7m"+status+"\u001b[0m")
         else:
             e.ab.append('\u001b[31;1m~\u001b[0m\r\n')
+
         e.ab.append('\x1b[K')
     #import pdb; pdb.set_trace()
+
+
 
 if __name__ == '__main__':
     
