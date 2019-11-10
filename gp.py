@@ -31,7 +31,7 @@ class E:
         self.w , self.h =  os.get_terminal_size()
         self.ab = []
         self.cx = 0
-        self.cy = 0
+        self.cy = 1
         self.rows = []
         self.row = ""
         self.rowoffset = 0
@@ -159,7 +159,7 @@ def editorProcessKey():
     elif c == 'x':
         startDebugMode()
     else:
-        insertCharAt(e.cy, c, e.cx)
+        insertCharAt(e.cy - 1, c, e.cx - 1)
 
 def editorScroll():
     """
