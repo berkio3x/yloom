@@ -29,33 +29,41 @@ class Row:
         return len(self.row)
 
 
-class E:
-    def __init__(self):
-        self.w , self.h =  os.get_terminal_size()
-        self.ab = []
-        self.cx = 0
-        self.cy = 0
+class Editor:
+    def __init__(self, width=0, height=0, append_buffer=[], cursor_x=0, cursor_y=0, rows=[], row='', rowoffset=0):
+        """ 
+        represents an editor & all associated functions.
+        :param width: the width of the editor's editable area.
+        :param height: the height of the editor's editable area.
+        :param append_buffer: buffer used to represent screen contents in memory.
+        :param cursor_x: cursor's initial horizontal position (default x=>1 is at column 1).
+        :param cursor_y: cursor's initial vertical position (default x=>2 is at column 2).
+        :param rows: contains rows of the editor.
+        :param rowoffest: offset from row of cursor.
+        """
+        
+        self.width = width
+        self.height = height  #os.get_terminal_size()
+        self.append_buffer = []
+        self.cursor_x = 1
+        self.cursor_y = 1
         self.rows = []
         self.row = ""
         self.rowoffset = 0
-        #self.rowcount = 0
+
+
 
     def clearBuffer(self):
-        self.ab = []
+        self.append_buffer = []
 
     def writeBufferToScreen(self):
-        #import pdb;pdb.set_trace()
-        for i in self.ab:
+        for i in self.append_buffer:
             sys.stdout.write(i)
         sys.stdout.flush()    
     
     def get_rowcount(self):
-        #return len(self.row)
         return len(self.rows)
 
-    
-    #def set_rowcount(self, c):
-    #    self._rowcount += c
 
 def editorAppendRow(line):
     logger.info(line)
@@ -96,13 +104,13 @@ def readKey():
 
 def editorMoveCursor(key):
     if key == 'a':
-        e.cx -= 1
+        e.cursor_x -= 1
     if key == 'd':
-        e.cx += 1
+        e.cursor_x += 1
     if key == 'w':
-        e.cy -= 1
+        e.cursor_y -= 1
     if key == 's':
-        e.cy += 1
+        e.cursor_y += 1
     
 
 def launchFileManager():
@@ -110,7 +118,7 @@ def launchFileManager():
     import time
     
 
-    w = int(e.w/3)
+    w = int(e.width/3)
     x= 10
     y= 30
     TOP_LEFT        =   '╔'
@@ -160,7 +168,6 @@ def editorProcessKey():
         editorMoveCursor(c)
     if c == 'f':
         launchFileManager()
-
     if c == 'x':
         startDebugMode()
 
@@ -169,50 +176,52 @@ def editorScroll():
     """
         Calculate the row offset based on cursor position
     """
-    if e.cy < e.rowoffset:
-        e.rowoffset = e.cy
-    if e.cy >= e.rowoffset + e.h:
-        e.rowoffset = e.cy - e.h
+    if e.cursor_y < e.rowoffset:
+        e.rowoffset = e.cursor_y
+    if e.cursor_y >= e.rowoffset + e.height:
+        e.rowoffset = e.cursor_y - e.height
 
 
-def refreshScreen():    
-    #system('clear')
+def refreshScreen(editor):
+    """ refreshes the screen of the editor instance passed.
+    :param editor Editor instance that is to be refreshed.
+    """
+
+    '''Add the action `move to start of terminal windows` to the append buffer'''
+    editor.append_buffer.append("\r\x1b[H")
     
-    editorScroll()
-    
-    #e.ab.append("\r\x1b[2J")
-    e.ab.append("\r\x1b[H")
-    #sys.stdout.write("\x1b[H")
-    #import pdb;pdb.set_trace()
-    drawRows()
-    #print("\x1b[H")
-    e.ab.append("\r\033[%d;%dH"%(e.cy,e.cx))
-    #import pdb;pdb.set_trace();
-    #e.ab.append('\r\x1b[H')
-    logger.debug(e.ab)
+    drawRows(editor)
 
-    e.writeBufferToScreen()
-    e.clearBuffer()
+    editor.append_buffer.append("\r\033[%d;%dH"%(editor.cursor_y,editor.cursor_x))
+    #logger.debug(editor.append_buffer)
+    editor.writeBufferToScreen()
+    editor.clearBuffer()
 
 
-def drawRows():
-    for y in range(e.h):
+def drawRows(e):
+    for y in range(e.height):
         #import pdb;pdb.set_trace()
         linerow = y + e.rowoffset
         if y < e.get_rowcount():
             logger.debug(f"rows: {len(e.rows)} , 'linerow': {linerow}")
-            e.ab.append(e.rows[linerow])
-        elif  y == int(e.h/2):
-            ss = "~ 🐻 Welcome to editor 🐻 ~"
-            msg = (int(e.w/2)-int(len(ss)/2))*" "+ss+"\r\n"
-            e.ab.append('~'+msg)
+            e.append_buffer.append(e.rows[linerow])
+        elif  y == int(e.height/2):
+            ss = "~ 🐻 welcome to the editor 🐻 ~"
+            msg = (int(e.width/2)-int(len(ss)/2))*" "+ss+"\r\n"
+            e.append_buffer.append('~'+msg)
+        elif y == e.height - 2:
+            cursor_positions = f"({e.cursor_x}, {e.cursor_y})\r\n"
+            e.append_buffer.append(cursor_positions)
         else:
-            e.ab.append('~\r\n')
-        e.ab.append('\x1b[K')
+            e.append_buffer.append('~\r\n')
+        e.append_buffer.append('\x1b[K')
 
 if __name__ == '__main__':
     
-    e  = E()
+    main_window_width, main_window_height = os.get_terminal_size()
+    
+    #main_window_width, main_window_height = (10,10)
+    e  = Editor(width=main_window_width, height=main_window_height)
     fd = sys.stdin.fileno()
     old = termios.tcgetattr(fd)
     enableRawMode(fd)
@@ -224,7 +233,7 @@ if __name__ == '__main__':
 
     while True:
         try:
-            refreshScreen()
+            refreshScreen(e)
             editorProcessKey()
         except Exception as e:
             restoreCanonMode(fd, old)
