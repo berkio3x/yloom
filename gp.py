@@ -66,7 +66,6 @@ class Editor:
 
 
 def editorAppendRow(line):
-    logger.info(line)
     e.rows.append(line)
 
 def editorOpen(filename):
@@ -203,7 +202,6 @@ def drawRows(e):
         #import pdb;pdb.set_trace()
         linerow = y + e.rowoffset
         if y < e.get_rowcount():
-            logger.debug(f"rows: {len(e.rows)} , 'linerow': {linerow}")
             e.append_buffer.append(e.rows[linerow])
         elif  y == int(e.height/2):
             ss = "~ 🐻 welcome to the editor 🐻 ~"
