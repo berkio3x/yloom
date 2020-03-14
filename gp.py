@@ -107,9 +107,11 @@ def editorMoveCursor(key):
     if key == 'd':
         e.cursor_x += 1
     if key == 'w':
-        e.cursor_y -= 1
+        if e.cursor_y > 0:
+            e.cursor_y -= 1
     if key == 's':
-        e.cursor_y += 1
+        if e.cursor_y <= e.get_rowcount():
+            e.cursor_y += 1
     
 
 def launchFileManager():
@@ -175,9 +177,10 @@ def editorScroll():
     """
         Calculate the row offset based on cursor position
     """
-    if e.cursor_y < e.rowoffset:
-        e.rowoffset = e.cursor_y
-    if e.cursor_y >= e.rowoffset + e.height:
+    if e.cursor_y < e.height:
+        e.rowoffset = 0
+
+    if e.cursor_y >= e.height:
         e.rowoffset = e.cursor_y - e.height
 
 
@@ -186,6 +189,8 @@ def refreshScreen(editor):
     :param editor Editor instance that is to be refreshed.
     """
 
+    editorScroll()
+    
     '''Add the action `move to start of terminal windows` to the append buffer'''
     editor.append_buffer.append("\r\x1b[H")
     
@@ -198,18 +203,26 @@ def refreshScreen(editor):
 
 
 def drawRows(e):
+    # ALl lines on the screen should be drawn in this loop
+    
     for y in range(e.height):
         #import pdb;pdb.set_trace()
         linerow = y + e.rowoffset
-        if y < e.get_rowcount():
+
+        # NOTE : e.height - 2 as last line has to be for the status bar & row indes starts at 0 so e.height - 1 - 1
+        if y < e.get_rowcount() and y < e.height - 2:
             e.append_buffer.append(e.rows[linerow])
+        
         elif  y == int(e.height/2):
             ss = "~ 🐻 welcome to the editor 🐻 ~"
             msg = (int(e.width/2)-int(len(ss)/2))*" "+ss+"\r\n"
             e.append_buffer.append('~'+msg)
-        elif y == e.height - 2:
-            cursor_positions = f"({e.cursor_x}, {e.cursor_y})\r\n"
-            e.append_buffer.append(cursor_positions)
+        
+        elif y == e.height - 1 :
+            msg = f"({e.cursor_x},{e.cursor_y})"
+            status = " "*(int(e.width-1)-len(msg))+msg+" "
+            e.append_buffer.append("\u001b[1m\u001b[7m"+status+"\u001b[0m")
+
         else:
             e.append_buffer.append('~\r\n')
         e.append_buffer.append('\x1b[K')
