@@ -12,7 +12,7 @@ logger.setLevel(logging.DEBUG)
 ch = logging.StreamHandler()
 ch.setLevel(logging.DEBUG)
 logger.addHandler(ch)
-
+from lex_py import LEX_PYTHON
 import os
 
 
@@ -82,12 +82,22 @@ class Editor:
 def editorAppendRow(line):
     e.rows.append(line)
 
+
+
 def editorOpen(filename):
     e.row = "Hi Hello World!"
-    #import pdb;pdb.set_trace()
+    
     with open(filename) as f:
-        for line in f:
-            editorAppendRow(line)
+        content = f.read()
+        
+    with open('tokens.txt','w') as of:
+        for i in LEX_PYTHON(content).lex():
+            of.write(i.name+"\n")
+    rows = content.split('\n')
+    
+    for line in rows:
+        logger.debug(line)
+        editorAppendRow(line+'\n')
         
 
 
@@ -254,6 +264,9 @@ def drawRows(e):
         else:
             e.append_buffer.append('~\r\n')
         e.append_buffer.append('\x1b[K')
+
+
+
 
 if __name__ == '__main__':
     
