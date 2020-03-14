@@ -1,6 +1,5 @@
 #!/usr/local/bin/python3
 
-
 import logging
 import sys, termios
 from os import system
@@ -29,6 +28,18 @@ class Row:
         return len(self.row)
 
 
+
+from enum import Enum
+
+
+
+class EditorModes(Enum):
+    INSERT = 'INSERT'
+    VISUAL = 'VISUAL'
+    
+
+
+
 class Editor:
     def __init__(self, width=0, height=0, append_buffer=[], cursor_x=0, cursor_y=0, rows=[], row='', rowoffset=0):
         """ 
@@ -50,8 +61,11 @@ class Editor:
         self.rows = []
         self.row = ""
         self.rowoffset = 0
+        self.mode = EditorModes.VISUAL
 
-
+    
+    def change_mode(self, mode):
+        self.mode = mode
 
     def clearBuffer(self):
         self.append_buffer = []
@@ -100,6 +114,10 @@ def readKey():
         else:
             return c
 
+
+def insertCharAt(row_idx, char, char_idx):
+    e.rows[row_idx] = e.rows[row_idx][:char_idx+1]+char+e.rows[row_idx][char_idx+1:]
+    editorMoveCursor('d')
 
 def editorMoveCursor(key):
     if key == 'a':
@@ -165,12 +183,15 @@ def editorProcessKey():
 
     if c == 'q':
         raise Exception
-    if c in ['w','s','a','d']:
+    elif c in ['w','s','a','d']:
         editorMoveCursor(c)
-    if c == 'f':
-        launchFileManager()
-    if c == 'x':
+    elif c == 'x':
         startDebugMode()
+    elif c == "i" and e.mode == EditorModes.VISUAL:
+        e.change_mode(EditorModes.INSERT)
+    else:
+        if e.mode == EditorModes.INSERT:
+            insertCharAt(e.cursor_y - 1, c, e.cursor_x - 1)
 
 
 def editorScroll():
@@ -203,8 +224,14 @@ def refreshScreen(editor):
 
 
 def drawRows(e):
-    # ALl lines on the screen should be drawn in this loop
     
+
+    # NOTE: Change background color for texts to solarized for now, Make it themable later on
+    #e.append_buffer.append("\u001b[48;5;15m")
+    
+
+    # ALl lines on the screen should be drawn in this loop
+
     for y in range(e.height):
         #import pdb;pdb.set_trace()
         linerow = y + e.rowoffset
@@ -220,7 +247,8 @@ def drawRows(e):
         
         elif y == e.height - 1 :
             msg = f"({e.cursor_x},{e.cursor_y})"
-            status = " "*(int(e.width-1)-len(msg))+msg+" "
+            mode = f"[{e.mode.name}]"
+            status = " "*(int(e.width-1)-len(msg)-len(mode))+mode+" "+msg+" "
             e.append_buffer.append("\u001b[1m\u001b[7m"+status+"\u001b[0m")
 
         else:
