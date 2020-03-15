@@ -15,4 +15,5 @@ A Terminal based editor implemented in python (tries to be a vim subset)
 * Multi Buffer support 
 * implement vim key binding support
 * Themeable
+* Multiple editing modes like vim
 
