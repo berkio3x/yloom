@@ -23,10 +23,12 @@ class TokenType(Enum):
 
 
 class LEX_PYTHON:
+
     def __init__(self, in_str):
         self.program = in_str
         self.index = 0
         self.tokens = []
+        self.token_start_index = 0
 
     def peek(self, offset = 0):
         return self.program[self.index + offset]
@@ -36,15 +38,17 @@ class LEX_PYTHON:
         self.index += 1
         return char
 
+    def begin_token(self):
+        self.token_start_index = self.index
 
     def emit_token(self, token_type):
-        self.tokens.append(token_type)
-        print(token_type)
+        self.tokens.append((token_type, self.index, self.index))
+        #print(token_type)
         self.index += 1
 
     def commit_token(self, token_type):
-        self.tokens.append(token_type)
-        print(token_type)
+        self.tokens.append((token_type, self.token_start_index, self.index - 1))
+        #print(token_type)
 
     def is_valid_first_character_of_identifier(self, ch):
         return ch.isalpha() or ch == '_'
@@ -57,7 +61,7 @@ class LEX_PYTHON:
 
         while self.index < len(self.program):
             #import pdb;pdb.set_trace();
-            print(self.index, len(self.program))
+            #print(self.index, len(self.program))
         
             ch = self.peek()
             
@@ -79,15 +83,21 @@ class LEX_PYTHON:
                 self.emit_token(TokenType.LEFT_BRACKET)
             elif ch == ']':
                 self.emit_token(TokenType.RIGHT_BRACKET)
-            elif ch == '"':
-                self.emit_token(TokenType.DOUBLE_QUOTED_STRING)
-            elif ch == "'":
-                self.emit_token(TokenType.SINGLE_QUOTED_STRING)
             elif ch == " ":
                 self.emit_token(TokenType.SPACE)
-            
+           
+            elif ch == '"':
+                self.begin_token()
+                self.consume()
+                while (self.peek() and self.peek() != '"'):
+                    print(self.peek(), self.peek()=="")
+                    self.consume()
+                self.consume()
+                self.commit_token(TokenType.DOUBLE_QUOTED_STRING)
+                continue
+
             elif ch.isnumeric():
-                #begin_token()
+                self.begin_token()
                 while(self.peek() and self.peek().isnumeric()):
                     self.consume()
                 self.commit_token(TokenType.NUMBER)
@@ -95,12 +105,11 @@ class LEX_PYTHON:
 
             elif self.is_valid_first_character_of_identifier(ch):
                 start_idx = self.index
+                self.begin_token()
                 while self.peek() and self.is_valid_nonfirst_character_of_identifier(self.peek()):
                     self.consume()
                 end_idx = self.index
-                print(start_idx, end_idx)
                 ss = self.program[start_idx:end_idx]
-                print("GOT VIEW: ", ss)
                     
                 if keyword.iskeyword(ss):
                     self.commit_token(TokenType.KEYWORD)
@@ -116,7 +125,8 @@ class LEX_PYTHON:
             #        if self.consume == '\n':
             #            break
             #    continue
-
+        import pprint
+        pprint.pprint(self.tokens)
         return self.tokens
 
 

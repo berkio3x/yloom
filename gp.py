@@ -19,7 +19,6 @@ import os
 def get_all_files():
     return glob.glob("/Users/dev")
 
-
 class Row:
     def __inti__(self):
         self.row = ""
@@ -27,18 +26,12 @@ class Row:
     def getRowLength(self):
         return len(self.row)
 
-
-
 from enum import Enum
-
-
 
 class EditorModes(Enum):
     INSERT = 'INSERT'
     VISUAL = 'VISUAL'
     
-
-
 
 class Editor:
     def __init__(self, width=0, height=0, append_buffer=[], cursor_x=0, cursor_y=0, rows=[], row='', rowoffset=0):
@@ -65,6 +58,9 @@ class Editor:
 
     
     def change_mode(self, mode):
+        input()
+        input()
+        input()
         self.mode = mode
 
     def clearBuffer(self):
@@ -89,15 +85,70 @@ def editorOpen(filename):
     
     with open(filename) as f:
         content = f.read()
-        
-    with open('tokens.txt','w') as of:
-        for i in LEX_PYTHON(content).lex():
-            of.write(i.name+"\n")
+    
+    tokens = LEX_PYTHON(content).lex()
+    #with open('tokens.txt','w') as of:
+    #    for i in tokens:
+    #        of.write(i.name+"\n")
+
+
     rows = content.split('\n')
     
+
+
+    # NOTE: Use hardcoded theme for now ,we have only one :D
+    from theme_default import THEME_MAP
+    default = "\u001b[30;1m"
+    
+    current_char_index = 0
+
     for line in rows:
-        logger.debug(line)
-        editorAppendRow(line+'\n')
+        highlighted_line = ""
+
+        #print([(x,y) for x,y in zip(tokens,line)])
+        
+        """
+           line = ["def hello(rag1, arg2):"]
+           tokens = [("keyword", 0, 2), "IDENTIFIER", "LEFT_PAREN"...]
+        """
+
+        highlighted_line = ''
+       
+        print(len(line),len(tokens))
+
+        for token in tokens:
+            
+            token_name = token[0].name
+            token_start = token[1]
+            token_end = token[2]
+
+            current_char_index = token_end
+            print(line)
+            print(f"[{line[token_start:token_end+1]}] ({token_start}, {token_end})" )
+            
+            if THEME_MAP.get(token_name, None):
+                highlighted_token = THEME_MAP[token_name] + line[token_start:token_end+1]+ default
+            else:
+                highlighted_token = line[token_start:token_end+1]
+            
+            highlighted_line += highlighted_token
+
+        #for index, ch in enumerate(line):
+        #    token = tokens[index]
+        #    
+        #    if type(token) == tuple:
+        #        token_name = token[0].name
+
+        #        if THEME_MAP.get(token_name, None):
+        #            for i in range(token[1], token[2]):
+        #                temp_token = ""
+        #            highlighted_token = THEME_MAP[token_name] + ch + default
+        #        else:
+        #            highlighted_token = ch
+        #        highlighted_line += highlighted_token
+        #    
+
+        editorAppendRow(highlighted_line+'\n')
         
 
 
