@@ -1,5 +1,7 @@
 from enum import Enum
 import keyword
+from collections import namedtuple
+
 
 
 class TokenType(Enum):
@@ -20,6 +22,12 @@ class TokenType(Enum):
     IDENTIFIER = "IDENTIFIER"
     SPACE = "SPACE"
     INVALID = "INVALID"
+    NEWLINE = "NEWLINE"
+
+
+
+Token = namedtuple('Token', ['type', 'row_start', 'row_end', 'col_start', 'col_end'])
+
 
 
 class LEX_PYTHON:
@@ -29,6 +37,8 @@ class LEX_PYTHON:
         self.index = 0
         self.tokens = []
         self.token_start_index = 0
+        self.current_row = 0
+        self.current_col = 0
 
     def peek(self, offset = 0):
         return self.program[self.index + offset]
@@ -36,19 +46,37 @@ class LEX_PYTHON:
     def consume(self):
         char = self.program[self.index]
         self.index += 1
+        self.current_col += 1
         return char
 
     def begin_token(self):
+        
         self.token_start_index = self.index
-
-    def emit_token(self, token_type):
-        self.tokens.append((token_type, self.index, self.index))
-        #print(token_type)
-        self.index += 1
+        self.row_start = self.current_row
+        self.col_start = self.current_col 
 
     def commit_token(self, token_type):
-        self.tokens.append((token_type, self.token_start_index, self.index - 1))
+        
+        self.row_end = self.current_row
+        self.col_end = self.current_col - 1
+
+        token = Token(token_type, self.row_start, self.row_end, self.col_start, self.col_end)
+        
+        self.tokens.append(token)
+        #self.tokens.append((token_type, self.token_start_index, self.index - 1))
+    
+    def emit_token(self, token_type):
+        self.row_end = self.current_row
+        self.row_start = self.current_row
+        self.col_start = self.current_col 
+       	self.col_end = self.current_col
+        token = Token(token_type, self.row_start, self.row_end, self.col_start, self.col_end)
+        self.tokens.append(token)
+        #self.tokens.append((token_type, self.index, self.index))
         #print(token_type)
+        self.index += 1
+        self.current_col += 1
+
 
     def is_valid_first_character_of_identifier(self, ch):
         return ch.isalpha() or ch == '_'
@@ -90,10 +118,18 @@ class LEX_PYTHON:
                 self.begin_token()
                 self.consume()
                 while (self.peek() and self.peek() != '"'):
-                    print(self.peek(), self.peek()=="")
                     self.consume()
                 self.consume()
                 self.commit_token(TokenType.DOUBLE_QUOTED_STRING)
+                continue
+            
+            elif ch == "'":
+                self.begin_token()
+                self.consume()
+                while (self.peek() and self.peek() != "'"):
+                    self.consume()
+                self.consume()
+                self.commit_token(TokenType.SINGLE_QUOTED_STRING)
                 continue
 
             elif ch.isnumeric():
@@ -102,6 +138,7 @@ class LEX_PYTHON:
                     self.consume()
                 self.commit_token(TokenType.NUMBER)
                 continue
+
 
             elif self.is_valid_first_character_of_identifier(ch):
                 start_idx = self.index
@@ -117,16 +154,19 @@ class LEX_PYTHON:
                     self.commit_token(TokenType.IDENTIFIER)
 
                 continue
+            
+            elif ch == "\n":
+                self.emit_token(TokenType.NEWLINE)        
+                self.current_row += 1
+               	self.current_col = 0
+		#self.consume()
+                continue
 
             else:
                 self.emit_token(TokenType.INVALID)
-            #if ch == "#":
-            #    while self.peek():
-            #        if self.consume == '\n':
-            #            break
-            #    continue
+        
         import pprint
-        pprint.pprint(self.tokens)
+        #pprint.pprint(self.tokens)
         return self.tokens
 
 
