@@ -131,6 +131,15 @@ class LEX_PYTHON:
                 self.consume()
                 self.commit_token(TokenType.SINGLE_QUOTED_STRING)
                 continue
+     
+            elif ch == "#":
+                self.begin_token()
+                self.consume()
+                while (self.peek() and self.peek() != "\n"):
+                    self.consume()
+                self.commit_token(TokenType.COMMENT)
+                continue
+
 
             elif ch.isnumeric():
                 self.begin_token()
@@ -155,6 +164,8 @@ class LEX_PYTHON:
 
                 continue
             
+
+ 
             elif ch == "\n":
                 self.emit_token(TokenType.NEWLINE)        
                 self.current_row += 1
