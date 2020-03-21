@@ -180,9 +180,8 @@ class LEX_PYTHON:
             else:
                 self.emit_token(TokenType.INVALID)
         
-        import pprint
-        pprint.pprint(self.tokens)
-        input()
+        #import pprint
+        #pprint.pprint(self.tokens)
         return self.tokens
 
 

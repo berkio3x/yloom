@@ -14,7 +14,9 @@ ch.setLevel(logging.DEBUG)
 logger.addHandler(ch)
 from lex_py import LEX_PYTHON
 import os
+import traceback
 
+from theme_default import THEME_MAP
 
 def get_all_files():
     return glob.glob("/Users/dev")
@@ -58,9 +60,6 @@ class Editor:
 
     
     def change_mode(self, mode):
-        input()
-        input()
-        input()
         self.mode = mode
 
     def clearBuffer(self):
@@ -80,53 +79,57 @@ def editorAppendRow(line):
 
 
 
-def editorOpen(filename):
-    e.row = "Hi Hello World!"
-    
-    rows = []
-
-    with open(filename) as f:
-        content = f.read()
-    
-    tokens = LEX_PYTHON(content).lex()
-    import pprint
-    pprint.pprint(tokens)
-    input()
-
-    rows = [line+'\n' for line in content.split('\n')]
-
-    
-    from theme_default import THEME_MAP
+def highlight(tokens, source_rows):
     default = "\u001b[0m"
     
     current_char_index = 0
-
-
     highlighted_token= ""
-
+    highlighted_line =''
     
     """
        line = ["def hello(rag1, arg2):"]
        tokens = [("keyword", 0, 2), "IDENTIFIER", "LEFT_PAREN"...]
     """
-
-    lines = []
-    highlighted_line = ''
-
-    
+    rows = []     
     for token in tokens:
-        current_char_index = token.col_end
-
-        if THEME_MAP.get(token.type.name, None):
-            highlighted_token = THEME_MAP[token.type.name] + rows[token.row_start][token.col_start:token.col_end+1]+ default
+        
+        if token.type.name == 'NEWLINE':
+            highlighted_line += '\n'
+            rows.append(highlighted_line)
+            highlighted_line += ''
         else:
-            highlighted_token = rows[token.row_start][token.col_start:token.col_end+1]
-        highlighted_line += highlighted_token
+            current_char_index = token.col_end
+
+            if THEME_MAP.get(token.type.name, None):
+                highlighted_token = THEME_MAP[token.type.name] + source_rows[token.row_start][token.col_start:token.col_end+1]+ default
+            else:
+                highlighted_token = source_rows[token.row_start][token.col_start:token.col_end+1]
+            highlighted_line += highlighted_token
     
-    editorAppendRow(highlighted_line)
+    return rows 
     
 
 
+
+
+
+def editorOpen(filename):
+    e.row = "Hi Hello World!"
+    rows = []
+    
+    with open(filename) as f:
+        source = f.read()
+        rows = [line+'\n' for line in source.split('\n')]
+        #for line in rows:
+        #    editorAppendRow(line)
+    tokens = LEX_PYTHON(source).lex()
+    
+    rows = highlight(tokens, rows)
+    
+    for row in rows:
+        editorAppendRow(row)
+
+   
 def restoreCanonMode(fd, old):
     termios.tcsetattr(fd, termios.TCSADRAIN, old)
 
@@ -316,7 +319,7 @@ if __name__ == '__main__':
         except Exception as e:
             restoreCanonMode(fd, old)
             import sys
-            logger.debug(str(e))
+            logger.debug(traceback.format_exc())
             logger.debug("restoring terminal state")
             sys.exit()
 
