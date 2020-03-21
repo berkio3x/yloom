@@ -82,7 +82,6 @@ def editorAppendRow(line):
 def highlight(tokens, source_rows):
     default = "\u001b[0m"
     
-    current_char_index = 0
     highlighted_token= ""
     highlighted_line =''
     
@@ -96,15 +95,26 @@ def highlight(tokens, source_rows):
         if token.type.name == 'NEWLINE':
             highlighted_line += '\n'
             rows.append(highlighted_line)
-            highlighted_line += ''
+            highlighted_line = ''
         else:
-            current_char_index = token.col_end
+            
+            if token.row_start != token.row_end:
+                # highlight token from where it starts on the first row (out of total rows to which this token spans)
 
-            if THEME_MAP.get(token.type.name, None):
-                highlighted_token = THEME_MAP[token.type.name] + source_rows[token.row_start][token.col_start:token.col_end+1]+ default
+                token_string = source_rows[token.row_start][token.col_start:]
+                
+                for i in range(token.row_start+1, token.row_end):
+                    token_string += source_rows[i]
+                
+                # highlight the last row of the multiline spannign token (ex, triple quotes in `"""` python   )
+                token_string += source_rows[token.row_end][:token.col_end+1] + default
+                
             else:
-                highlighted_token = source_rows[token.row_start][token.col_start:token.col_end+1]
-            highlighted_line += highlighted_token
+                token_string =  source_rows[token.row_start][token.col_start:token.col_end+1]
+            
+            if THEME_MAP.get(token.type.name, None):
+                token_string = THEME_MAP[token.type.name] + token_string + default
+            highlighted_line += token_string
     
     return rows 
     

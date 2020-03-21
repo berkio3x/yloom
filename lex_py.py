@@ -55,6 +55,10 @@ class LEX_PYTHON:
         self.token_start_index = self.index
         self.row_start = self.current_row
         self.col_start = self.current_col 
+    
+    def extend_row(self):
+        self.current_row += 1
+        self.current_col = 0
 
     def commit_token(self, token_type):
         
@@ -87,8 +91,6 @@ class LEX_PYTHON:
     def lex(self):
 
         while self.index < len(self.program):
-            #import pdb;pdb.set_trace();
-            #print(self.index, len(self.program))
         
             ch = self.peek()
             
@@ -120,8 +122,11 @@ class LEX_PYTHON:
                 if self.peek() == '"':
                     self.consume()
                     self.consume()
+
                     #import pdb;pdb.set_trace()
                     while (self.peek() and self.peek() != '"'):
+                        if self.peek() == '\n':
+                            self.extend_row()
                         self.consume()
                     self.consume()
                     self.consume()
@@ -188,8 +193,6 @@ class LEX_PYTHON:
             else:
                 self.emit_token(TokenType.INVALID)
         
-        import pprint
-        pprint.pprint(self.tokens)
         return self.tokens
 
 
