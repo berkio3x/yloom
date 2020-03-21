@@ -120,8 +120,6 @@ def editorOpen(filename):
     with open(filename) as f:
         source = f.read()
         rows = [line+'\n' for line in source.split('\n')]
-        #for line in rows:
-        #    editorAppendRow(line)
     tokens = LEX_PYTHON(source).lex()
     
     rows = highlight(tokens, rows)

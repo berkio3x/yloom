@@ -13,6 +13,7 @@ class TokenType(Enum):
     RIGHT_BRACKET = "]"
     DOUBLE_QUOTED_STRING = 'DB_STR'
     SINGLE_QUOTED_STRING = 'SL_STR'
+    MULTI_LINE_COMMENT = 'ML_COMMENT'
     COMMENT = '#'
     COMMA = ','
     ASTERISK = "*"
@@ -117,13 +118,19 @@ class LEX_PYTHON:
             elif ch == '"':
                 self.begin_token()
                 c = self.consume()
-                if c != '"':
+                # two consecutive `"` means probably a comment with triple quotes/ multiline comment
+                
+                if self.peek() == '"':
                     while (self.peek() and self.peek() != '"'):
                         self.consume()
                     self.consume()
-                    self.commit_token(TokenType.DOUBLE_QUOTED_STRING)
+                    self.commit_token(TokenType.MULTI_LINE_COMMENT)
                 else:
-                    pass
+                    while (self.peek() and self.peek() != '"'):
+                        self.consume()
+                    self.consume()
+                    #import pdb;pdb.set_trace()
+                    self.commit_token(TokenType.DOUBLE_QUOTED_STRING)
                 continue
             
             elif ch == "'":
