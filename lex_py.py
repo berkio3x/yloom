@@ -13,7 +13,7 @@ class TokenType(Enum):
     RIGHT_BRACKET = "]"
     DOUBLE_QUOTED_STRING = 'DB_STR'
     SINGLE_QUOTED_STRING = 'SL_STR'
-    MULTI_LINE_COMMENT = 'ML_COMMENT'
+    MULTI_LINE_STRING = 'ML_COMMENT'
     COMMENT = '#'
     COMMA = ','
     ASTERISK = "*"
@@ -73,8 +73,6 @@ class LEX_PYTHON:
        	self.col_end = self.current_col
         token = Token(token_type, self.row_start, self.row_end, self.col_start, self.col_end)
         self.tokens.append(token)
-        #self.tokens.append((token_type, self.index, self.index))
-        #print(token_type)
         self.index += 1
         self.current_col += 1
 
@@ -117,19 +115,22 @@ class LEX_PYTHON:
            
             elif ch == '"':
                 self.begin_token()
-                c = self.consume()
+                self.consume()
                 # two consecutive `"` means probably a comment with triple quotes/ multiline comment
-                
                 if self.peek() == '"':
+                    self.consume()
+                    self.consume()
+                    #import pdb;pdb.set_trace()
                     while (self.peek() and self.peek() != '"'):
                         self.consume()
                     self.consume()
-                    self.commit_token(TokenType.MULTI_LINE_COMMENT)
+                    self.consume()
+                    self.consume()
+                    self.commit_token(TokenType.MULTI_LINE_STRING)
                 else:
                     while (self.peek() and self.peek() != '"'):
                         self.consume()
                     self.consume()
-                    #import pdb;pdb.set_trace()
                     self.commit_token(TokenType.DOUBLE_QUOTED_STRING)
                 continue
             
@@ -187,8 +188,8 @@ class LEX_PYTHON:
             else:
                 self.emit_token(TokenType.INVALID)
         
-        #import pprint
-        #pprint.pprint(self.tokens)
+        import pprint
+        pprint.pprint(self.tokens)
         return self.tokens
 
 
