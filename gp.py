@@ -89,6 +89,9 @@ def editorOpen(filename):
         content = f.read()
     
     tokens = LEX_PYTHON(content).lex()
+    import pprint
+    pprint.pprint(tokens)
+    input()
 
     rows = [line+'\n' for line in content.split('\n')]
 
@@ -107,18 +110,19 @@ def editorOpen(filename):
        tokens = [("keyword", 0, 2), "IDENTIFIER", "LEFT_PAREN"...]
     """
 
+    lines = []
     highlighted_line = ''
+
+    
     for token in tokens:
-        #import pdb;pdb.set_trace(); 
         current_char_index = token.col_end
-        
-        #print(f"[{line[token_start:token_end+1]}] ({token_start}, {token_end})" )
-        
+
         if THEME_MAP.get(token.type.name, None):
             highlighted_token = THEME_MAP[token.type.name] + rows[token.row_start][token.col_start:token.col_end+1]+ default
         else:
             highlighted_token = rows[token.row_start][token.col_start:token.col_end+1]
         highlighted_line += highlighted_token
+    
     editorAppendRow(highlighted_line)
     
 

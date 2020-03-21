@@ -116,11 +116,14 @@ class LEX_PYTHON:
            
             elif ch == '"':
                 self.begin_token()
-                self.consume()
-                while (self.peek() and self.peek() != '"'):
+                c = self.consume()
+                if c != '"':
+                    while (self.peek() and self.peek() != '"'):
+                        self.consume()
                     self.consume()
-                self.consume()
-                self.commit_token(TokenType.DOUBLE_QUOTED_STRING)
+                    self.commit_token(TokenType.DOUBLE_QUOTED_STRING)
+                else:
+                    pass
                 continue
             
             elif ch == "'":
@@ -131,7 +134,8 @@ class LEX_PYTHON:
                 self.consume()
                 self.commit_token(TokenType.SINGLE_QUOTED_STRING)
                 continue
-     
+
+
             elif ch == "#":
                 self.begin_token()
                 self.consume()
@@ -177,7 +181,8 @@ class LEX_PYTHON:
                 self.emit_token(TokenType.INVALID)
         
         import pprint
-        #pprint.pprint(self.tokens)
+        pprint.pprint(self.tokens)
+        input()
         return self.tokens
 
 
