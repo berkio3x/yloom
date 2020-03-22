@@ -51,7 +51,7 @@ class Editor:
         self.width = width
         self.height = height  #os.get_terminal_size()
         self.append_buffer = []
-        self.cursor_x = 1
+        self.cursor_x = 1 
         self.cursor_y = 1
         self.rows = []
         self.row = ""
@@ -85,10 +85,6 @@ def highlight(tokens, source_rows):
     highlighted_token= ""
     highlighted_line =''
     
-    """
-       line = ["def hello(rag1, arg2):"]
-       tokens = [("keyword", 0, 2), "IDENTIFIER", "LEFT_PAREN"...]
-    """
     rows = []     
     for token in tokens:
         
@@ -264,7 +260,6 @@ def refreshScreen(editor):
     drawRows(editor)
 
     editor.append_buffer.append("\r\033[%d;%dH"%(editor.cursor_y,editor.cursor_x))
-    #logger.debug(editor.append_buffer)
     editor.writeBufferToScreen()
     editor.clearBuffer()
 
@@ -279,7 +274,7 @@ def drawRows(e):
     # ALl lines on the screen should be drawn in this loop
 
     for y in range(e.height):
-        #import pdb;pdb.set_trace()
+        e.append_buffer.append('\x1b[K')
         linerow = y + e.rowoffset
 
         # NOTE : e.height - 2 as last line has to be for the status bar & row indes starts at 0 so e.height - 1 - 1
@@ -294,12 +289,12 @@ def drawRows(e):
         elif y == e.height - 1 :
             msg = f"({e.cursor_x},{e.cursor_y})"
             mode = f"[{e.mode.name}]"
-            status = " "*(int(e.width-1)-len(msg)-len(mode))+mode+" "+msg+" "
-            e.append_buffer.append("\u001b[1m\u001b[7m"+status+"\u001b[0m")
+            status = " "*(int(e.width-2)-len(msg)-len(mode))+mode+" "+msg+" "
+            e.append_buffer.append("\u001b[48;5;2m"+status+"\u001b[0m")
 
         else:
             e.append_buffer.append('~\r\n')
-        e.append_buffer.append('\x1b[K')
+
 
 
 
