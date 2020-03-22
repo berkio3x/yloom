@@ -132,7 +132,7 @@ def editorOpen(filename):
         rows = [line+'\n' for line in source.split('\n')]
     tokens = LEX_PYTHON(source).lex()
     
-    rows = highlight(tokens, rows)
+    #rows = highlight(tokens, rows)
     
     for row in rows:
         editorAppendRow(row)
@@ -210,7 +210,6 @@ import types
 
 
 def startDebugMode():
-    logger.debug('starting Editor debugger')
     while True:
         x= input('(Editor Debugger) > ')
         
@@ -287,7 +286,7 @@ def drawRows(e):
         if y < e.get_rowcount() and y < e.height - 2:
             e.append_buffer.append(e.rows[linerow])
         
-        elif  y == int(e.height/2):
+        elif  y == int(e.height/2) and e.get_rowcount() <=0 :
             ss = "~ 🐻 welcome to the editor 🐻 ~"
             msg = (int(e.width/2)-int(len(ss)/2))*" "+ss+"\r\n"
             e.append_buffer.append('~'+msg)
