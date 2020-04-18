@@ -166,26 +166,39 @@ def readKey():
             return c
 
 
-def insertCharAt(row_idx, char, char_idx):
-    e.rows[row_idx] = e.rows[row_idx][:char_idx+1]+char+e.rows[row_idx][char_idx+1:]
-    editorMoveCursor('d')
+def get_logical_index(x,y):
+    """
+        The physical position of cursor {x,y} has to be mapped to the logical position of append_buffer,
+        physical screen top left is at {1,1} & append buffer array starts at index 0.
+    """
+    return (x-1, y-1)
 
-def editorMoveCursor(key):
+def insertCharAt(cursor_x, cursor_y, char):
+    """
+        Recieves the logical physical position of the cursor & the character to insert
+    """
 
-    # limit movement beyound edirot bounds/visible window
+    # Find the actual position to add in the append buffer.
+    col_idx, row_idx = get_logical_index(cursor_x, cursor_y )
+    e.rows[row_idx] = e.rows[row_idx][:col_idx]+char+e.rows[row_idx][col_idx:]
+
+
+def editorMoveCursor(key,units=1):
+
+    # limit movement beyound ediotr bounds/visible window
    
 
     if key == 'a':
         if e.cursor_x > 1:
-            e.cursor_x -= 1
+            e.cursor_x -= units
     if key == 'd':
-        e.cursor_x += 1
+        e.cursor_x += units
     if key == 'w':
         if e.cursor_y > 1:
-            e.cursor_y -= 1
+            e.cursor_y -= units
     if key == 's':
         if e.cursor_y <= e.get_rowcount():
-            e.cursor_y += 1
+            e.cursor_y += units
     
 
 def launchFileManager():
@@ -246,7 +259,8 @@ def editorProcessKey():
         e.change_mode(EditorModes.INSERT)
     else:
         if e.mode == EditorModes.INSERT:
-            insertCharAt(e.cursor_y - 1, c, e.cursor_x - 1)
+            insertCharAt(e.cursor_x, e.cursor_y , c )
+            editorMoveCursor('d',1)
 
 
 def editorScroll():
