@@ -78,8 +78,16 @@ def editorAppendRow(line):
     e.rows.append(line)
 
 
+def p(txt):
+    import pprint
+    pprint.pprint(txt)
+    input()
+
+
+
 
 def highlight(tokens, source_rows):
+    
     default = "\u001b[0m"
     
     highlighted_token= ""
@@ -111,7 +119,7 @@ def highlight(tokens, source_rows):
             if THEME_MAP.get(token.type.name, None):
                 token_string = THEME_MAP[token.type.name] + token_string + default
             highlighted_line += token_string
-    
+    #p(rows)
     return rows 
     
 
@@ -163,12 +171,17 @@ def insertCharAt(row_idx, char, char_idx):
     editorMoveCursor('d')
 
 def editorMoveCursor(key):
+
+    # limit movement beyound edirot bounds/visible window
+   
+
     if key == 'a':
-        e.cursor_x -= 1
+        if e.cursor_x > 1:
+            e.cursor_x -= 1
     if key == 'd':
         e.cursor_x += 1
     if key == 'w':
-        if e.cursor_y > 0:
+        if e.cursor_y > 1:
             e.cursor_y -= 1
     if key == 's':
         if e.cursor_y <= e.get_rowcount():
@@ -272,6 +285,7 @@ def drawRows(e):
     
 
     # ALl lines on the screen should be drawn in this loop
+    
 
     for y in range(e.height):
         e.append_buffer.append('\x1b[K')
