@@ -179,28 +179,48 @@ def insertCharAt(cursor_x, cursor_y, char):
     col_idx, row_idx = get_logical_index(cursor_x, cursor_y )
     
     if char == "\n":
-        # check if the split has to be done
-        #if len(e.rows[row_idx]) == col_idx:
-        e.rows = e.rows[:row_idx+1]+['\n']+e.rows[row_idx+1:]
-        editorMoveCursor(Keys.DOWN)
-        #else:
-        #    pass
+        #check if the split has to be done
+        if len(e.rows[row_idx]) == col_idx:
+            e.rows = e.rows[:row_idx+1]+['\n']+e.rows[row_idx+1:]
+            editorMoveCursor(Keys.DOWN)
+        else:
+            new_row = e.rows[row_idx][col_idx:]
+            current_row = e.rows[row_idx][:col_idx]
+            e.rows[row_idx] = current_row
+            e.rows = e.rows[:row_idx+1]+['\n']+[new_row]+['\n']+e.rows[row_idx+1:]
+
+
     else:
         e.rows[row_idx] = e.rows[row_idx][:col_idx]+char+e.rows[row_idx][col_idx:]
         editorMoveCursor(Keys.RIGHT,1)
 
 def editorMoveCursor(key,units=1):
-    # limit movement beyound ediotr bounds/visible window
+    
+    col_idx, row_idx = get_logical_index(e.cursor_x, e.cursor_y )
+    
     if key == Keys.LEFT:
         if e.cursor_x > 1:
             e.cursor_x -= units
     if key == Keys.RIGHT:
-        e.cursor_x += units
+
+        if e.cursor_x < len(e.rows[row_idx]):
+            e.cursor_x += units
     if key == Keys.TOP:
+        
+        # Check if there is any character directly in above row, if so move cursor to that position , 
+        # otherwise move cursor to the end of previous line
+
         if e.cursor_y > 1:
+            if len(e.rows[row_idx - 1]) < len(e.rows[row_idx]):
+                e.cursor_x = len(e.rows[row_idx - 1])
             e.cursor_y -= units
+            
     if key == Keys.DOWN:
+        # Check if there is any character directly below the current cursor, if so move cursor to that position,
+        # otherwise move cursor to the end of next line
         if e.cursor_y <= e.get_rowcount():
+            if len(e.rows[row_idx + 1]) < len(e.rows[row_idx]):
+                e.cursor_x = len(e.rows[row_idx + 1])
             e.cursor_y += units
     
 
