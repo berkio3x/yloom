@@ -30,10 +30,15 @@ class Row:
 
 from enum import Enum
 
+from editorKeys import Keys
+
+
 class EditorModes(Enum):
     INSERT = 'INSERT'
     VISUAL = 'VISUAL'
     
+
+
 
 class Editor:
     def __init__(self, width=0, height=0, append_buffer=[], cursor_x=0, cursor_y=0, rows=[], row='', rowoffset=0):
@@ -76,13 +81,6 @@ class Editor:
 
 def editorAppendRow(line):
     e.rows.append(line)
-
-
-def p(txt):
-    import pprint
-    pprint.pprint(txt)
-    input()
-
 
 
 
@@ -158,13 +156,12 @@ def readKey():
             c2 = sys.stdin.read(1)
 
             if c1 == '[':
-                if c2 == 'A': return 'w'
-                if c2 == 'B': return 's'
-                if c2 == 'C': return 'd'
-                if c2 == 'D': return 'a'
+                if c2 == 'A': return Keys.TOP
+                if c2 == 'B': return Keys.DOWN
+                if c2 == 'C': return Keys.RIGHT
+                if c2 == 'D': return Keys.LEFT
         else:
             return c
-
 
 def get_logical_index(x,y):
     """
@@ -180,23 +177,29 @@ def insertCharAt(cursor_x, cursor_y, char):
 
     # Find the actual position to add in the append buffer.
     col_idx, row_idx = get_logical_index(cursor_x, cursor_y )
-    e.rows[row_idx] = e.rows[row_idx][:col_idx]+char+e.rows[row_idx][col_idx:]
-
+    
+    if char == "\n":
+        # check if the split has to be done
+        #if len(e.rows[row_idx]) == col_idx:
+        e.rows = e.rows[:row_idx+1]+['\n']+e.rows[row_idx+1:]
+        editorMoveCursor(Keys.DOWN)
+        #else:
+        #    pass
+    else:
+        e.rows[row_idx] = e.rows[row_idx][:col_idx]+char+e.rows[row_idx][col_idx:]
+        editorMoveCursor(Keys.RIGHT,1)
 
 def editorMoveCursor(key,units=1):
-
     # limit movement beyound ediotr bounds/visible window
-   
-
-    if key == 'a':
+    if key == Keys.LEFT:
         if e.cursor_x > 1:
             e.cursor_x -= units
-    if key == 'd':
+    if key == Keys.RIGHT:
         e.cursor_x += units
-    if key == 'w':
+    if key == Keys.TOP:
         if e.cursor_y > 1:
             e.cursor_y -= units
-    if key == 's':
+    if key == Keys.DOWN:
         if e.cursor_y <= e.get_rowcount():
             e.cursor_y += units
     
@@ -248,19 +251,19 @@ def startDebugMode():
     
 def editorProcessKey():
     c = readKey()
-
-    if c == 'q':
-        raise Exception
-    elif c in ['w','s','a','d']:
+    
+    if c in [Keys.LEFT, Keys.RIGHT, Keys.TOP, Keys.DOWN]:
         editorMoveCursor(c)
-    elif c == 'x':
-        startDebugMode()
-    elif c == "i" and e.mode == EditorModes.VISUAL:
-        e.change_mode(EditorModes.INSERT)
+
+    elif e.mode == EditorModes.VISUAL:
+        if c == 'i':
+            e.change_mode(EditorModes.INSERT)
+    elif c == 'x': raise Exception
     else:
         if e.mode == EditorModes.INSERT:
-            insertCharAt(e.cursor_x, e.cursor_y , c )
-            editorMoveCursor('d',1)
+            insertCharAt(e.cursor_x, e.cursor_y, c)
+
+
 
 
 def editorScroll():
