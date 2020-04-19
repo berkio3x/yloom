@@ -188,11 +188,15 @@ def insertCharAt(cursor_x, cursor_y, char):
             current_row = e.rows[row_idx][:col_idx]
             e.rows[row_idx] = current_row
             e.rows = e.rows[:row_idx+1]+['\n']+[new_row]+['\n']+e.rows[row_idx+1:]
-
+            editorMoveCursor(Keys.DOWN)
+    
+    elif ord(char) == 127:
+        e.rows[row_idx] = e.rows[row_idx][:col_idx - 1 ]+e.rows[row_idx][col_idx:]
+        editorMoveCursor(Keys.LEFT)
 
     else:
         e.rows[row_idx] = e.rows[row_idx][:col_idx]+char+e.rows[row_idx][col_idx:]
-        editorMoveCursor(Keys.RIGHT,1)
+        editorMoveCursor(Keys.RIGHT)
 
 def editorMoveCursor(key,units=1):
     
@@ -274,7 +278,7 @@ def editorProcessKey():
     
     if c in [Keys.LEFT, Keys.RIGHT, Keys.TOP, Keys.DOWN]:
         editorMoveCursor(c)
-
+    
     elif e.mode == EditorModes.VISUAL:
         if c == 'i':
             e.change_mode(EditorModes.INSERT)
