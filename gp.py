@@ -181,14 +181,14 @@ def insertCharAt(cursor_x, cursor_y, char):
     if char == "\n":
         #check if the split has to be done
         if len(e.rows[row_idx]) == col_idx:
-            e.rows = e.rows[:row_idx+1]+['\n']+e.rows[row_idx+1:]
-            editorMoveCursor(Keys.DOWN)
+            e.rows = e.rows[:row_idx+1]['\n']+e.rows[row_idx+1:]
         else:
             new_row = e.rows[row_idx][col_idx:]
             current_row = e.rows[row_idx][:col_idx]
-            e.rows[row_idx] = current_row
-            e.rows = e.rows[:row_idx+1]+['\n']+[new_row]+['\n']+e.rows[row_idx+1:]
-            editorMoveCursor(Keys.DOWN)
+            e.rows[row_idx] = current_row+'\n'
+            e.rows = e.rows[:row_idx+1]+[new_row]+e.rows[row_idx+1:]
+        editorMoveCursor(Keys.DOWN)
+        e.cursor_x=1
     
     elif ord(char) == 127:
         # If during character deletion all the previous characters have exhausted, do a join with ablove line
