@@ -231,9 +231,10 @@ def editorMoveCursor(key,units=1):
             e.cursor_y -= units
             
     if key == Keys.DOWN:
-        # Check if there is any character directly below the current cursor, if so move cursor to that position,
-        # otherwise move cursor to the end of next line
-        if e.cursor_y <= e.get_rowcount():
+        if e.cursor_y < e.get_rowcount():
+
+            # Check if there is any character directly below the current cursor, if so move cursor to that position,
+            # otherwise move cursor to the end of next line
             if len(e.rows[row_idx + 1]) < len(e.rows[row_idx]):
                 e.cursor_x = len(e.rows[row_idx + 1])
             e.cursor_y += units
