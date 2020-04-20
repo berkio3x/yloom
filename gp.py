@@ -191,8 +191,19 @@ def insertCharAt(cursor_x, cursor_y, char):
             editorMoveCursor(Keys.DOWN)
     
     elif ord(char) == 127:
-        e.rows[row_idx] = e.rows[row_idx][:col_idx - 1 ]+e.rows[row_idx][col_idx:]
-        editorMoveCursor(Keys.LEFT)
+        # If during character deletion all the previous characters have exhausted, do a join with ablove line
+
+        if col_idx == 0:
+            active_line = e.rows[row_idx]
+            previous_line_length = len(e.rows[row_idx -1 ])
+            e.rows[row_idx - 1 ]  = e.rows[row_idx - 1].replace('\n','') + active_line
+            del e.rows[row_idx]
+            # after doing the join of lines , shoudl i move cursor? Yes , ofcourse! ;)
+            editorMoveCursor(Keys.TOP)
+            e.cursor_x = previous_line_length
+        else:
+            e.rows[row_idx] = e.rows[row_idx][:col_idx - 1 ]+e.rows[row_idx][col_idx:]
+            editorMoveCursor(Keys.LEFT)
 
     else:
         e.rows[row_idx] = e.rows[row_idx][:col_idx]+char+e.rows[row_idx][col_idx:]
