@@ -93,7 +93,7 @@ def highlight(tokens, source_rows):
     
     rows = []     
     for token in tokens:
-        
+        print(token) 
         if token.type.name == 'NEWLINE':
             highlighted_line += '\n'
             rows.append(highlighted_line)
@@ -106,17 +106,19 @@ def highlight(tokens, source_rows):
                 token_string = source_rows[token.row_start][token.col_start:]
                 
                 for i in range(token.row_start+1, token.row_end):
-                    token_string += source_rows[i]
-                
+                    token_string = THEME_MAP[token.type.name] + source_rows[i] + default
+                    rows.append(token_string)
+
+                token_string = ''
                 # highlight the last row of the multiline spannign token (ex, triple quotes in `"""` python   )
                 token_string += source_rows[token.row_end][:token.col_end+1] + default
                 
             else:
                 token_string =  source_rows[token.row_start][token.col_start:token.col_end+1]
             
-            if THEME_MAP.get(token.type.name, None):
-                token_string = THEME_MAP[token.type.name] + token_string + default
-            highlighted_line += token_string
+                if THEME_MAP.get(token.type.name, None):
+                    token_string = THEME_MAP[token.type.name] + token_string + default
+                highlighted_line += token_string
     #p(rows)
     return rows 
     
@@ -133,8 +135,11 @@ def editorOpen(filename):
         source = f.read()
         rows = [line+'\n' for line in source.split('\n')]
     tokens = LEX_PYTHON(source).lex()
-    
+    xx = len(rows)
     #rows = highlight(tokens, rows)
+    yy = len(rows)
+    print(xx,yy)
+    #assert xx == yy
     
     for row in rows:
         editorAppendRow(row)
