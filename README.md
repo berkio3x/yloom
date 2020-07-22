@@ -3,7 +3,7 @@ A Terminal based editor implemented in python (tries to be a vim subset)
 #### Pure python - no external libraries
 
 
-![editor screenshot](https://github.com/berkio3x/yloom/blob/master/Screenshot%202020-03-24%20at%201.03.36%20PM.png)
+![editor screenshot](https://github.com/berkio3x/yloom/blob/master/screenshots/editor.png)
 #### NOTE: WIP
 
 
