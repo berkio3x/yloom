@@ -12,12 +12,11 @@ logger.setLevel(logging.DEBUG)
 ch = logging.StreamHandler()
 ch.setLevel(logging.DEBUG)
 logger.addHandler(ch)
-from langs.python import LEX_PYTHON
-
+from langs.python  import LEX_PYTHON
 import os
 import traceback
 
-from theme_default import THEME_MAP
+from themes.theme_default import THEME_MAP
 
 def get_all_files():
     return glob.glob("/Users/dev")
@@ -146,7 +145,8 @@ def editorOpen(filename):
         editorAppendRow(row)
 
    
-
+def restoreCanonMode(fd, old):
+    termios.tcsetattr(fd, termios.TCSADRAIN, old)
 
 def enableRawMode(fd):
     new = termios.tcgetattr(fd)
