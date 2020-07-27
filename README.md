@@ -11,11 +11,12 @@ WIP:
 
 * Syntax highlighting 
      - python only initially.
+* Basic text editing
 
 
 #### Feature yet to be implemented
 
-* Basic text editing
+
 * code search (single buffer)
 * Multi Buffer support 
 * implement vim key binding support
