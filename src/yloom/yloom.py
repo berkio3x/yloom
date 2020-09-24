@@ -136,7 +136,7 @@ def editorOpen(filename):
         rows = [line+'\n' for line in source.split('\n')]
     tokens = LEX_PYTHON(source).lex()
     xx = len(rows)
-    rows = highlight(tokens, rows)
+    #rows = highlight(tokens, rows)
     yy = len(rows)
     print(xx,yy)
     #assert xx == yy
